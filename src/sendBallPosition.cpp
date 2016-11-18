@@ -20,6 +20,7 @@ using namespace cv;
 #define XY 2
 
 double pos_ctr[XY];
+double bal_ctr[XY];
 int params_roi[XY+XY];
 unsigned int threshold_gray = 50; 
 unsigned int len_roi = 30; 
@@ -85,6 +86,9 @@ void getMovingCenter( Mat bin_img_ ){
 }
 
 void drawCircle( Mat smt_img_ ){
+  bal_ctr[0] = -1;
+  bal_ctr[1] = -1;
+
   if ( params_roi[0] > 0 ){
     Mat roi = smt_img_( Rect( params_roi[0], params_roi[1], params_roi[2], params_roi[3] ));
     
@@ -96,6 +100,10 @@ void drawCircle( Mat smt_img_ ){
       int radius =  cvRound(circles[i][2]);
       circle( dst_img, center, 3, Scalar(0,255,0), -1, 8, 0 );
       circle( dst_img, center, radius, Scalar(0,0,255), 3, 8, 0 );
+    }
+    if ( circles.size() > 0 ){
+      bal_ctr[0] = circles[0][0] + params_roi[0];
+      bal_ctr[1] = circles[0][1] + params_roi[1];
     }
   }
 }
@@ -161,14 +169,15 @@ int main(int argc, char* argv[]){
     getCircleCenter( src_img );
     imshow( "dst", dst_img );
     
-    sprintf( buffer, "%d %d", (int) pos_ctr[0], (int) pos_ctr[1] );
+    //sprintf( buffer, "%d %d", (int) pos_ctr[0], (int) pos_ctr[1] );
+    sprintf( buffer, "%d %d", (int) bal_ctr[0], (int) bal_ctr[1] );
     send( newSocket, buffer, 13, 0);
  
     waitKey(1);
     //waitKey(100);
   }
   
-  strcpy( buffer,"END\n");
+  strcpy( buffer,"END");
   send( newSocket, buffer, 13, 0);
 
   return 0;
