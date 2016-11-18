@@ -1,0 +1,3 @@
+gcc test.c -o test.out `pkg-config --cflags opencv` `pkg-config --libs opencv`
+
+plot '../data/ball.dat' using 1:2 with lines
