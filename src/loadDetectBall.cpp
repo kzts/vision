@@ -20,7 +20,7 @@ int main(int argc, char* argv[]){
   //VideoCapture cap("video.avi");
   VideoCapture cap(argv[1]);
   Mat src_img, gry_img, old_img, dif_img, smt_img, bin_img, dst_img, work_img;
-  Mat bak_img, bak_imgs[NUM_BAK];
+  //Mat bak_img, bak_imgs[NUM_BAK];
 
   /*
   namedWindow( "src", CV_WINDOW_AUTOSIZE);
@@ -28,10 +28,9 @@ int main(int argc, char* argv[]){
   namedWindow( "dif", CV_WINDOW_AUTOSIZE);
   namedWindow( "smt", CV_WINDOW_AUTOSIZE);
   */
-
   namedWindow( "bin", CV_WINDOW_AUTOSIZE);
   namedWindow( "dst", CV_WINDOW_AUTOSIZE);
-  namedWindow( "bak", CV_WINDOW_AUTOSIZE);
+  //namedWindow( "bak", CV_WINDOW_AUTOSIZE);
 
   unsigned int threshold_gray = 50; 
   unsigned int len_roi = 30; 
@@ -39,29 +38,30 @@ int main(int argc, char* argv[]){
   cap >> src_img;
   cvtColor( src_img, gry_img, CV_BGR2GRAY );
   old_img = gry_img.clone();
-  bak_img = gry_img.clone();
+  //bak_img = gry_img.clone();
 
-  for ( int i = 0; i < NUM_BAK; i++ )
-    bak_imgs[i] = gry_img;
+  //for ( int i = 0; i < NUM_BAK; i++ )
+  //bak_imgs[i] = gry_img;
     //bak_imgs[i] = gry_img.clone();
 
+  /*
   for ( int frame = 0; frame < 380; frame++ ){
     cap >> src_img;
     cvtColor( src_img, gry_img, CV_BGR2GRAY );
 
-    for ( int j = 1; j < NUM_BAK; j++ )
-      bak_imgs[j-1] = bak_imgs[j].clone();
+    //for ( int j = 1; j < NUM_BAK; j++ )
+    //bak_imgs[j-1] = bak_imgs[j].clone();
       //bak_imgs[j] = bak_imgs[j-1];
     //bak_imgs[j] = bak_imgs[j-1].clone();
     //bak_imgs[0] = gry_img.clone();
     //bak_imgs[0] = gry_img;
     bak_imgs[NUM_BAK - 1] = gry_img.clone();
   }
-
+  */
   int num_frame = 0;
 
-  for ( int frame = 0; frame < 100; frame++ ){
-    //while (true){
+  //for ( int frame = 0; frame < 100; frame++ ){
+  while (true){
     //load
     cap >> src_img;
     if ( src_img.empty() )
@@ -70,7 +70,7 @@ int main(int argc, char* argv[]){
     // detect circle    
     dst_img = src_img.clone();
     cvtColor( src_img, gry_img, CV_BGR2GRAY ); // convert to gray
-    
+    /*  
     for ( int x = 0; x < bak_img.cols; x++ ){
       for ( int y = 0; y < bak_img.rows; y++ ){
 	double c = 0;
@@ -84,12 +84,12 @@ int main(int argc, char* argv[]){
 	bak_img.at<unsigned char>(y,x) = (unsigned char) c;
       }
     }
-    
+    */
     //bak_img = bak_imgs[NUM_BAK - 1].clone();
     //bak_img = bak_imgs[0].clone();
     
-    //absdiff( gry_img, old_img, dif_img );
-    absdiff( gry_img, bak_img, dif_img );
+    absdiff( gry_img, old_img, dif_img );
+    //absdiff( gry_img, bak_img, dif_img );
     GaussianBlur( dif_img, smt_img, Size(7,7), 2, 2 ); // smoothing    
     threshold( dif_img, bin_img, threshold_gray, 255, THRESH_BINARY );
 
@@ -164,13 +164,13 @@ int main(int argc, char* argv[]){
       }
     }
 
-    for ( int j = 1; j < NUM_BAK; j++ )
-      bak_imgs[j-1] = bak_imgs[j].clone();
+    //for ( int j = 1; j < NUM_BAK; j++ )
+    //bak_imgs[j-1] = bak_imgs[j].clone();
     //bak_imgs[j] = bak_imgs[j-1];
     //bak_imgs[j] = bak_imgs[j-1].clone();
     //bak_imgs[0] = gry_img.clone();
     //bak_imgs[0] = gry_img;
-    bak_imgs[NUM_BAK - 1] = gry_img.clone();
+    //bak_imgs[NUM_BAK - 1] = gry_img.clone();
 
     // view
     /*
@@ -180,22 +180,22 @@ int main(int argc, char* argv[]){
     imshow( "smt", smt_img );
     */
 
-    imshow( "bin", bin_img );
+    //imshow( "bin", bin_img );
     imshow( "dst", dst_img );
-    imshow( "bak", bak_img );
+    //imshow( "bak", bak_img );
     //imshow( "bak", bak_imgs[ NUM_BAK - 1]);
     //imshow( "bak", bak_imgs[0]);
      
-    //waitKey(1);
-    waitKey(100);
+    waitKey(1);
+    //waitKey(100);
     num_frame++;
   }
   
-  ofstream writing_file( "../data/ball.dat" );
+  //ofstream writing_file( "../data/ball.dat" );
 
   //writing_file << " x \t y " << endl;
-  for (int i = 0; i < num_frame; i++)
-    writing_file << i << " " << PosBall[i][0] << " " << PosBall[i][1] << endl;
+  //for (int i = 0; i < num_frame; i++)
+  //writing_file << i << " " << PosBall[i][0] << " " << PosBall[i][1] << endl;
   
   return 0;
 }
