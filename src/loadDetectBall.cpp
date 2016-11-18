@@ -28,7 +28,7 @@ int main(int argc, char* argv[]){
   namedWindow( "dif", CV_WINDOW_AUTOSIZE);
   namedWindow( "smt", CV_WINDOW_AUTOSIZE);
   */
-  namedWindow( "bin", CV_WINDOW_AUTOSIZE);
+  //namedWindow( "bin", CV_WINDOW_AUTOSIZE);
   namedWindow( "dst", CV_WINDOW_AUTOSIZE);
   //namedWindow( "bak", CV_WINDOW_AUTOSIZE);
 
