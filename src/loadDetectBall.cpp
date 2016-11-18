@@ -10,11 +10,38 @@ using namespace std;
 using namespace cv;
 
 //#define NUM_BAK 10
-#define NUM_BAK 120
-#define NUM_BK2 20
+//#define NUM_BAK 120
+//#define NUM_BK2 20
 //#define NUM_BK2 2
 
-double PosBall[120*15][2];
+//double PosBall[120*15][2];
+
+#define XY 2
+
+double pos_ctr[XY];
+unsigned int threshold_gray = 50; 
+
+void getCenter( Mat bin_img_ ){
+  int x_sum = 0, y_sum = 0, n_sum = 0;
+  
+  for ( int x = 0; x < bin_img_.cols; x++ ){
+    for ( int y = 0; y < bin_img_.rows; y++ ){
+      if ( bin_img_.at<unsigned char>(y,x) > threshold_gray ){
+	x_sum += x;
+	y_sum += y;
+	n_sum++;
+      }
+    }
+  }
+  //cout << x_sum << "\t" << y_sum << "\t" << n_sum << "\t" << (double) x_sum/ n_sum << endl;
+  if ( n_sum > 0 ){
+    pos_ctr[0] = x_sum/ n_sum;
+    pos_ctr[1] = y_sum/ n_sum;
+  }else{
+    pos_ctr[0] = -1;
+    pos_ctr[1] = -1;
+  }
+}
 
 int main(int argc, char* argv[]){
   //VideoCapture cap("video.avi");
@@ -32,7 +59,7 @@ int main(int argc, char* argv[]){
   namedWindow( "dst", CV_WINDOW_AUTOSIZE);
   //namedWindow( "bak", CV_WINDOW_AUTOSIZE);
 
-  unsigned int threshold_gray = 50; 
+  //unsigned int threshold_gray = 50; 
   unsigned int len_roi = 30; 
 
   cap >> src_img;
@@ -95,6 +122,8 @@ int main(int argc, char* argv[]){
 
     old_img = gry_img.clone();
 
+    getCenter( bin_img );
+    /*
     int x_sum = 0, y_sum = 0, n_sum = 0;
     for ( int x = 0; x < bin_img.cols; x++ ){
       for ( int y = 0; y < bin_img.rows; y++ ){
@@ -105,19 +134,23 @@ int main(int argc, char* argv[]){
 	}
       }
     }
-
+    */
     //cout << x_sum << "\t" << y_sum << "\t" << n_sum << "\t" << (double) x_sum/ n_sum << endl;
     
-    if ( n_sum > 50 ){
-      double x_ctr = x_sum/ n_sum;
-      double y_ctr = y_sum/ n_sum;
-      
+    //if ( n_sum > 50 ){
+    if ( pos_ctr[0] > 0 ){
+      //double x_ctr = x_sum/ n_sum;
+      //double y_ctr = y_sum/ n_sum;
+      double x_ctr = pos_ctr[0];      
+      double y_ctr = pos_ctr[1];      
+
+      /*
       Point center;
       if ( n_sum != 0 ){
 	Point center( cvRound( x_ctr ), cvRound( y_ctr ));
 	circle( dst_img, center, 10, Scalar(255,0,0), 3, 8, 0 );
       }
-
+      */
       vector<Vec3f> circles;
       Mat smt;
 
@@ -157,10 +190,10 @@ int main(int argc, char* argv[]){
 	circle( dst_img, center, 3, Scalar(0,255,0), -1, 8, 0 );
 	circle( dst_img, center, radius, Scalar(0,0,255), 3, 8, 0 );
 
-	if ( i == 0 ){
-	  PosBall[ num_frame ][0] = cvRound( circles[i][0]) + x_ini;
-	  PosBall[ num_frame ][1] = cvRound( circles[i][1]) + y_ini;
-	}
+	//if ( i == 0 ){
+	//PosBall[ num_frame ][0] = cvRound( circles[i][0]) + x_ini;
+	//PosBall[ num_frame ][1] = cvRound( circles[i][1]) + y_ini;
+	//}
       }
     }
 
