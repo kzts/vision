@@ -3,16 +3,15 @@
 #include <sys/time.h>
 #include <iostream>
 #include <fstream>
+#include <string.h>
 //opencv
 #include <opencv2/opencv.hpp>
 #include <opencv2/core/core.hpp>
 #include <opencv2/imgproc/imgproc.hpp>
 #include <opencv2/highgui/highgui.hpp>
 // socket
-#include <stdio.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
-#include <string.h>
 #include <arpa/inet.h>
 
 using namespace std;
