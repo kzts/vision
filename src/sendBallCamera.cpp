@@ -21,8 +21,8 @@ using namespace cv;
 #define CAMERA_WIDTH 640
 #define CAMERA_HEIGHT 480
 #define CAMERA_FPS 60
-#define AVI_FILE 0
-#define CAMERA 1
+//#define AVI_FILE 0
+//#define CAMERA 1
 #define END_TIME_SEC 10
 #define XY 2
 
@@ -168,79 +168,49 @@ int setServer(void){
 int main(int argc, char* argv[])
 {
   // command line input
-  if ( argc != 5 ){
+  if ( argc != 4 ){
     cout << "input four: " 
 	 << "view mode (off:0, on:1), " 
-	 << "source (load:0, camera:1), " 
-	 << "IP address and " 
-	 << "video name or camera number." 
+	 << "this PC's IP address and " 
+	 << "camera number." 
 	 << endl;
     return -1;
   }
   view_mode = atoi(argv[1]);
-  int source = atoi(argv[2]);
-  ip_address = argv[3];
-  //char* ip_address = argv[3];
-  //char* source = argv[4];
+  ip_address = argv[2];
+  int camera_num = atoi(argv[3]);
 
+  // open socket
   int newSocket = setServer();
 
-  // opencv
-  if ( source == AVI_FILE ){
-    char* avi_filename = argv[4];
-    VideoCapture cap(avi_filename); 
-    Mat src_img, gry_img;
-    // initiation 
-    if ( view_mode > 0 )
-      namedWindow( "dst", CV_WINDOW_AUTOSIZE);
-    cap >> src_img;
-    cvtColor( src_img, gry_img, CV_BGR2GRAY );
-    old_img = gry_img.clone();
-    // loop
-    while (true){
-      cap >> src_img;
-      if ( src_img.empty() )
-	break;
-      getCircleCenter( src_img );
-      
-      if ( view_mode > 0 )
-	imshow( "dst", dst_img );
-      
-      //sprintf( buffer, "%d %d", (int) pos_ctr[0], (int) pos_ctr[1] );
-      sprintf( buffer, "%d %d", (int) bal_ctr[0], (int) bal_ctr[1] );
-      send( newSocket, buffer, 13, 0);
- 
-      waitKey(1);
-    }
+  // open camera  
+  VideoCapture cap(camera_num); 
+  if(!cap.isOpened()){
+    cout << "camera is not found." << endl;
+    return -1;
+  }else{
+    cap.set( CV_CAP_PROP_FRAME_WIDTH, CAMERA_WIDTH );
+    cap.set( CV_CAP_PROP_FRAME_HEIGHT, CAMERA_HEIGHT );
+    cap.set( CV_CAP_PROP_FPS, CAMERA_FPS );
   }
-  if ( source == CAMERA ){
-    struct timeval ini, now;
-    gettimeofday(&ini, NULL);
+  Mat src_img, gry_img;
 
-    int camera_num = atoi(argv[4]);
-    VideoCapture cap(camera_num); 
-    if(!cap.isOpened()){
-      cout << "camera is not found." << endl;
-      return -1;
-    }else{
-      cap.set( CV_CAP_PROP_FRAME_WIDTH, CAMERA_WIDTH );
-      cap.set( CV_CAP_PROP_FRAME_HEIGHT, CAMERA_HEIGHT );
-      cap.set( CV_CAP_PROP_FPS, CAMERA_FPS );
-    }
-    Mat src_img, gry_img;
-    // initiation 
-    if ( view_mode > 0 )
-      namedWindow( "dst", CV_WINDOW_AUTOSIZE);
+  // initiation 
+  struct timeval ini, now;
+  gettimeofday(&ini, NULL);
+
+  if ( view_mode > 0 )
+    namedWindow( "dst", CV_WINDOW_AUTOSIZE);
+  cap >> src_img;
+  cvtColor( src_img, gry_img, CV_BGR2GRAY );
+  old_img = gry_img.clone();
+  // loop
+  while (true){
+    gettimeofday(&now, NULL);
+    
     cap >> src_img;
-    cvtColor( src_img, gry_img, CV_BGR2GRAY );
-    old_img = gry_img.clone();
-    // loop
-    while (true){
-      gettimeofday(&now, NULL);
-
-      cap >> src_img;
-      if ( now.tv_sec - ini.tv_sec > END_TIME_SEC )
-	break;
+    if ( now.tv_sec - ini.tv_sec > END_TIME_SEC )
+      break;
       getCircleCenter( src_img );
       
       if ( view_mode > 0 )
@@ -249,9 +219,8 @@ int main(int argc, char* argv[])
       //sprintf( buffer, "%d %d", (int) pos_ctr[0], (int) pos_ctr[1] );
       sprintf( buffer, "%d %d", (int) bal_ctr[0], (int) bal_ctr[1] );
       send( newSocket, buffer, 13, 0);
- 
+      
       waitKey(1);
-    }
   }
 
   // close socket  
