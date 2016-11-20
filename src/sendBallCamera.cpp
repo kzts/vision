@@ -23,7 +23,9 @@ using namespace cv;
 #define CAMERA_FPS 60
 //#define AVI_FILE 0
 //#define CAMERA 1
-#define END_TIME_SEC 10
+//#define END_TIME_SEC 10
+#define END_TIME_MS 10000
+//#define END_TIME_MS 1000
 #define XY 2
 
 double pos_ctr[XY];
@@ -37,6 +39,8 @@ int view_mode = 0;
 char* ip_address;
 char buffer[1024];
 
+struct timeval ini_t, now_t;
+
 /*
 void saveBall(void){
   ofstream writing_file( "../data/ball.dat" );
@@ -47,6 +51,53 @@ void saveBall(void){
     writing_file << i << " " << PosBall[i][0] << " " << PosBall[i][1] << endl;
 }
 */
+
+#define NUM 99999
+
+char   filename_dat[NUM];
+char   filename_avi[NUM];
+Mat    frame_avi[NUM];        
+double data_time[NUM];
+//unsigned int sec, fps, w, h;
+
+int codec = CV_FOURCC('X', 'V', 'I', 'D');
+
+void getFileName(void){
+  // set file name
+  struct tm *date;
+  time_t now;
+  
+  time(&now);
+  date = localtime(&now);
+
+  int year   = date->tm_year + 1900;
+  int month  = date->tm_mon + 1;
+  int day    = date->tm_mday;
+  int hour   = date->tm_hour;
+  int minute = date->tm_min;
+  int second = date->tm_sec;
+  
+  sprintf( filename_dat, "../data/dat/%04d%02d%02d/%02d_%02d_%02d.dat", year, month, day, hour, minute, second);
+  sprintf( filename_avi, "../data/avi/%04d%02d%02d/%02d_%02d_%02d.avi", year, month, day, hour, minute, second);
+  //cout << filenameAvi << endl;
+}
+
+void saveAvi( int num ){
+  VideoWriter writer( filename_avi, 
+		      codec, CAMERA_FPS, Size( CAMERA_WIDTH, CAMERA_HEIGHT ), true );
+  
+  if (!writer.isOpened())
+    cout  << "Could not open the output video." << endl;
+  else
+    for( unsigned int n = 0; n < num; n++ )
+      writer << frame_avi[n];
+}
+
+void saveDat( int num ){
+  ofstream ofs( filename_dat );
+  for( unsigned int n = 0; n < num; n++ )
+    ofs << data_time[n] << endl;
+}
 
 void getRoiParameters( int cols, int rows ){
   if ( pos_ctr[0] > 0 ){
@@ -164,6 +215,16 @@ int setServer(void){
   return newSocket_;
 }
 
+double getElaspedTime( int i ){
+  double now_time_;
+  gettimeofday( &now_t, NULL );
+  now_time_ =
+    + 1000.0*( now_t.tv_sec - ini_t.tv_sec )
+    + 0.001*( now_t.tv_usec - ini_t.tv_usec );
+
+  data_time[i] = now_time_;
+  return now_time_;
+}
 
 int main(int argc, char* argv[])
 {
@@ -196,8 +257,9 @@ int main(int argc, char* argv[])
   Mat src_img, gry_img;
 
   // initiation 
-  struct timeval ini, now;
-  gettimeofday(&ini, NULL);
+  //struct timeval ini, now;
+  //gettimeofday(&ini, NULL);
+  gettimeofday( &ini_t, NULL );
 
   if ( view_mode > 0 )
     namedWindow( "dst", CV_WINDOW_AUTOSIZE);
@@ -205,27 +267,41 @@ int main(int argc, char* argv[])
   cvtColor( src_img, gry_img, CV_BGR2GRAY );
   old_img = gry_img.clone();
   // loop
+  int i = 0;
   while (true){
-    gettimeofday(&now, NULL);
+    double now_ms = getElaspedTime(i);
+    //gettimeofday(&now, NULL);
     
     cap >> src_img;
-    if ( now.tv_sec - ini.tv_sec > END_TIME_SEC )
+    //if ( now.tv_sec - ini.tv_sec > END_TIME_SEC )
+    if ( now_ms > END_TIME_MS )
       break;
-      getCircleCenter( src_img );
+    getCircleCenter( src_img );
       
-      if ( view_mode > 0 )
-	imshow( "dst", dst_img );
+    if ( view_mode > 0 )
+      imshow( "dst", dst_img );
       
-      //sprintf( buffer, "%d %d", (int) pos_ctr[0], (int) pos_ctr[1] );
-      sprintf( buffer, "%d %d", (int) bal_ctr[0], (int) bal_ctr[1] );
-      send( newSocket, buffer, 13, 0);
-      
-      waitKey(1);
+    //sprintf( buffer, "%d %d", (int) pos_ctr[0], (int) pos_ctr[1] );
+    sprintf( buffer, "%d %d", (int) bal_ctr[0], (int) bal_ctr[1] );
+    send( newSocket, buffer, 13, 0);
+
+    frame_avi[i] = src_img;
+    i++;
+    
+    waitKey(1);
   }
 
   // close socket  
   strcpy( buffer,"END");
-  send( newSocket, buffer, 13, 0);
+  send( newSocket, buffer, 1024, 0);
+
+  // save data
+  getFileName();
+  cout << filename_dat << " " << filename_avi << endl;
+  saveDat(i);
+  cout << "save dat file. " << endl;
+  saveAvi(i);
+  cout << "save avi file. " << endl;
 
   return 0;
 }
