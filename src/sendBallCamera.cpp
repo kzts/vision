@@ -266,7 +266,9 @@ int main(int argc, char* argv[])
   cap >> src_img;
   cvtColor( src_img, gry_img, CV_BGR2GRAY );
   old_img = gry_img.clone();
+
   // loop
+  getFileName();
   int i = 0;
   while (true){
     double now_ms = getElaspedTime(i);
@@ -274,8 +276,13 @@ int main(int argc, char* argv[])
     
     cap >> src_img;
     //if ( now.tv_sec - ini.tv_sec > END_TIME_SEC )
-    if ( now_ms > END_TIME_MS )
+    if ( now_ms > END_TIME_MS ){
+      // close socket  
+      strcpy( buffer, "END" );
+      send( newSocket, buffer, 1024, 0);
       break;
+    }
+
     getCircleCenter( src_img );
       
     if ( view_mode > 0 )
@@ -291,17 +298,11 @@ int main(int argc, char* argv[])
     waitKey(1);
   }
 
-  // close socket  
-  strcpy( buffer,"END");
-  send( newSocket, buffer, 1024, 0);
-
   // save data
-  getFileName();
-  cout << filename_dat << " " << filename_avi << endl;
   saveDat(i);
-  cout << "save dat file. " << endl;
+  cout << "saved dat file: " << filename_dat << endl;
   saveAvi(i);
-  cout << "save avi file. " << endl;
+  cout << "saved avi file: " << filename_avi << endl;
 
   return 0;
 }
