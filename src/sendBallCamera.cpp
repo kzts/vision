@@ -292,7 +292,8 @@ int main(int argc, char* argv[])
     sprintf( buffer, "%d %d", (int) bal_ctr[0], (int) bal_ctr[1] );
     send( newSocket, buffer, 13, 0);
 
-    frame_avi[i] = src_img;
+    //frame_avi[i] = src_img;
+    frame_avi[i] = src_img.clone();
     i++;
     
     waitKey(1);
