@@ -16,18 +16,18 @@
 
 using namespace std;
 using namespace cv;
-//double PosBall[120*15][2];
 
 #define CAMERA_WIDTH 640
 #define CAMERA_HEIGHT 480
 #define CAMERA_FPS 60
-//#define AVI_FILE 0
-//#define CAMERA 1
-//#define END_TIME_SEC 10
 #define END_TIME_MS 10000
 //#define END_TIME_MS 1000
 #define XY 2
+#define NUM 99999
+#define NUM_BALL_PARAMS 11
 
+// ball
+int mov_params[XY+1];
 double pos_ctr[XY];
 double bal_ctr[XY];
 int params_roi[XY+XY];
@@ -36,31 +36,34 @@ unsigned int len_roi = 30;
 Mat old_img, dst_img;
 int view_mode = 0;
 
+// socket
 char* ip_address;
 char buffer[1024];
 
+// time
 struct timeval ini_t, now_t;
 
-/*
-void saveBall(void){
-  ofstream writing_file( "../data/ball.dat" );
-
-  writing_file << " x \t y " << endl;
-  
-  for (int i = 0; i < num_frame; i++)
-    writing_file << i << " " << PosBall[i][0] << " " << PosBall[i][1] << endl;
-}
-*/
-
-#define NUM 99999
-
+// save 
 char   filename_dat[NUM];
 char   filename_avi[NUM];
 Mat    frame_avi[NUM];        
 double data_time[NUM];
-//unsigned int sec, fps, w, h;
-
+double data_ball[NUM][NUM_BALL_PARAMS];
 int codec = CV_FOURCC('X', 'V', 'I', 'D');
+
+void setBallParameters(int i){
+  data_ball[i][ 0] = pos_ctr[0];
+  data_ball[i][ 1] = pos_ctr[1];
+  data_ball[i][ 2] = bal_ctr[0];
+  data_ball[i][ 3] = bal_ctr[1];
+  data_ball[i][ 4] = params_roi[0];
+  data_ball[i][ 5] = params_roi[1];
+  data_ball[i][ 6] = params_roi[2];
+  data_ball[i][ 7] = params_roi[3];
+  data_ball[i][ 8] = (double) mov_params[0];
+  data_ball[i][ 9] = (double) mov_params[1];
+  data_ball[i][10] = (double) mov_params[2];
+}
 
 void getFileName(void){
   // set file name
@@ -95,8 +98,14 @@ void saveAvi( int num ){
 
 void saveDat( int num ){
   ofstream ofs( filename_dat );
-  for( unsigned int n = 0; n < num; n++ )
-    ofs << data_time[n] << endl;
+  for( unsigned int n = 0; n < num; n++ ){
+    ofs << data_time[n] << "\t";    
+    for( unsigned int m = 0; m < NUM_BALL_PARAMS; m++ )
+      ofs << data_ball[n][m] << "\t";    
+    ofs  << endl;
+  }
+  //for( unsigned int n = 0; n < num; n++ )
+    //ofs << data_time[n] << endl;
 }
 
 void getRoiParameters( int cols, int rows ){
@@ -145,6 +154,9 @@ void getMovingCenter( Mat bin_img_ ){
     pos_ctr[0] = -1;
     pos_ctr[1] = -1;
   }
+  mov_params[0] = x_sum;
+  mov_params[1] = y_sum;
+  mov_params[2] = n_sum;
 }
 
 void drawCircle( Mat smt_img_ ){
@@ -294,6 +306,7 @@ int main(int argc, char* argv[])
 
     //frame_avi[i] = src_img;
     frame_avi[i] = src_img.clone();
+    setBallParameters(i);
     i++;
     
     waitKey(1);

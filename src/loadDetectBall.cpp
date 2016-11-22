@@ -7,26 +7,49 @@
 
 using namespace std;
 using namespace cv;
-//double PosBall[120*15][2];
 
 #define XY 2
+#define NUM 99999
+#define NUM_BALL_PARAMS 11
 
+double data_ball[NUM][NUM_BALL_PARAMS];
+int mov_params[XY+1];
 double pos_ctr[XY];
+double bal_ctr[XY];
 int params_roi[XY+XY];
 unsigned int threshold_gray = 50; 
 unsigned int len_roi = 30; 
 Mat old_img, dst_img;
 
-/*
-void saveBall(void){
-  ofstream writing_file( "../data/ball.dat" );
+char* dat_filename;
 
-  writing_file << " x \t y " << endl;
-  
-  for (int i = 0; i < num_frame; i++)
-    writing_file << i << " " << PosBall[i][0] << " " << PosBall[i][1] << endl;
+void saveDat( int num ){
+  cout << "save file: " << dat_filename << endl;
+  ofstream ofs( dat_filename );
+  for( unsigned int n = 0; n < num; n++ ){
+    //ofs << data_time[n] << "\t";    
+    ofs << n << "\t";    
+    for( unsigned int m = 0; m < NUM_BALL_PARAMS; m++ )
+      ofs << data_ball[n][m] << "\t";    
+    ofs  << endl;
+  }
+  //for( unsigned int n = 0; n < num; n++ )
+    //ofs << data_time[n] << endl;
 }
-*/
+
+void setBallParameters(int i){
+  data_ball[i][ 0] = pos_ctr[0];
+  data_ball[i][ 1] = pos_ctr[1];
+  data_ball[i][ 2] = bal_ctr[0];
+  data_ball[i][ 3] = bal_ctr[1];
+  data_ball[i][ 4] = params_roi[0];
+  data_ball[i][ 5] = params_roi[1];
+  data_ball[i][ 6] = params_roi[2];
+  data_ball[i][ 7] = params_roi[3];
+  data_ball[i][ 8] = (double) mov_params[0];
+  data_ball[i][ 9] = (double) mov_params[1];
+  data_ball[i][10] = (double) mov_params[2];
+}
 
 void getRoiParameters( int cols, int rows ){
   if ( pos_ctr[0] > 0 ){
@@ -74,9 +97,16 @@ void getMovingCenter( Mat bin_img_ ){
     pos_ctr[0] = -1;
     pos_ctr[1] = -1;
   }
+
+  mov_params[0] = x_sum;
+  mov_params[1] = y_sum;
+  mov_params[2] = n_sum;
 }
 
 void drawCircle( Mat smt_img_ ){
+  bal_ctr[0] = -1;
+  bal_ctr[1] = -1;
+
   if ( params_roi[0] > 0 ){
     Mat roi = smt_img_( Rect( params_roi[0], params_roi[1], params_roi[2], params_roi[3] ));
     
@@ -88,6 +118,10 @@ void drawCircle( Mat smt_img_ ){
       int radius =  cvRound(circles[i][2]);
       circle( dst_img, center, 3, Scalar(0,255,0), -1, 8, 0 );
       circle( dst_img, center, radius, Scalar(0,0,255), 3, 8, 0 );
+    }
+    if ( circles.size() > 0 ){
+      bal_ctr[0] = circles[0][0] + params_roi[0];
+      bal_ctr[1] = circles[0][1] + params_roi[1];
     }
   }
 }
@@ -109,7 +143,15 @@ void getCircleCenter( Mat src_img_ ){
 
 
 int main(int argc, char* argv[]){
-  VideoCapture cap(argv[1]);
+  // command line input
+  if ( argc != 3 ){
+    cout << "input two: video name and dat file name." << endl;
+    return -1;
+  }
+  char* video_filename = argv[1];
+  dat_filename = argv[2];
+
+  VideoCapture cap(video_filename);
   Mat src_img, gry_img;
 
   namedWindow( "dst", CV_WINDOW_AUTOSIZE);
@@ -118,6 +160,7 @@ int main(int argc, char* argv[]){
   cvtColor( src_img, gry_img, CV_BGR2GRAY );
   old_img = gry_img.clone();
 
+  int i;
   while (true){
     //load
     cap >> src_img;
@@ -126,10 +169,13 @@ int main(int argc, char* argv[]){
     getCircleCenter( src_img );
     imshow( "dst", dst_img );
      
+    setBallParameters(i);
     waitKey(1);
     //waitKey(100);
+    i++;
   }
-  
+  saveDat(i-1);  
+
   return 0;
 }
 
