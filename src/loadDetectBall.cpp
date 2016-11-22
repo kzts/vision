@@ -158,7 +158,8 @@ int main(int argc, char* argv[]){
 
   cap >> src_img;
   cvtColor( src_img, gry_img, CV_BGR2GRAY );
-  old_img = gry_img.clone();
+  //old_img = gry_img.clone();
+  GaussianBlur( gry_img, old_img, Size(5,5), 2, 2 ); 
 
   int i;
   while (true){
