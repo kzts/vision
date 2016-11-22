@@ -129,7 +129,8 @@ void getRoiParameters( int cols, int rows ){
     params_roi[2] = w_roi;
     params_roi[3] = h_roi;
   }else{
-    for ( int i = 0; i++; i < (XY+XY) )
+    //for ( int i = 0; i++; i < (XY+XY) )
+    for ( int i = 0; i < (XY+XY); i++ )
       params_roi[i] = -1;
   }
 }
