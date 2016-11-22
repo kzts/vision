@@ -162,7 +162,7 @@ int main(int argc, char* argv[]){
   //old_img = gry_img.clone();
   GaussianBlur( gry_img, old_img, Size(5,5), 2, 2 ); 
 
-  int i;
+  int i = 0;
   while (true){
     //load
     cap >> src_img;
