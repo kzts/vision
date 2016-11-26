@@ -172,7 +172,8 @@ int main(int argc, char* argv[]){
     imshow( "dst", dst_img );
      
     setBallParameters(i);
-    waitKey(1);
+    //waitKey(1);
+    waitKey(30);
     //waitKey(100);
     i++;
   }
