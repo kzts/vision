@@ -214,7 +214,7 @@ void getCircleCenter( Mat src_img_ ){
 }
 
 //int setServer(void){
-int setServer( char* ip_address_, int num_port_ ){
+int setServer( char* ip_address_, int port_num_ ){
   // server
   int welcomeSocket, newSocket_;
   //char buffer[1024];
@@ -314,10 +314,10 @@ int main(int argc, char* argv[])
   ip_address = argv[2];
   int camera_num = atoi(argv[3]);
   */
-  int num_port = 7891;
+  int port_num = 7891;
   // open socket
   //int newSocket = setServer();
-  int newSocket = setServer( ip_address, num_port );
+  int newSocket = setServer( ip_address, port_num );
 
   // open camera  
   VideoCapture cap(camera_num); 
