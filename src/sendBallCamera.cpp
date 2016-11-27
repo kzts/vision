@@ -352,13 +352,18 @@ int main(int argc, char* argv[])
     //gettimeofday(&now, NULL);
     
     cap >> src_img;
+
+    recv( newSocket, buffer, 3, 0);
+    if ( strcmp( buffer, "END" ) == 0 )
+	 break;
+
     //if ( now.tv_sec - ini.tv_sec > END_TIME_SEC )
-    if ( now_ms > END_TIME_MS ){
-      // close socket  
-      strcpy( buffer, "END" );
-      send( newSocket, buffer, 1024, 0);
-      break;
-    }
+    //if ( now_ms > END_TIME_MS ){
+    // close socket  
+    //strcpy( buffer, "END" );
+    //send( newSocket, buffer, 1024, 0);
+    //break;
+    //}
 
     getCircleCenter( src_img );
       
@@ -366,8 +371,8 @@ int main(int argc, char* argv[])
       imshow( "dst", dst_img );
       
     //sprintf( buffer, "%d %d", (int) pos_ctr[0], (int) pos_ctr[1] );
-    sprintf( buffer, "%d %d", (int) bal_ctr[0], (int) bal_ctr[1] );
-    send( newSocket, buffer, 13, 0);
+    sprintf( buffer, "%8.3f %8.3f", bal_ctr[0], bal_ctr[1] );
+    send( newSocket, buffer, 32, 0);
 
     //frame_avi[i] = src_img;
     frame_avi[i] = src_img.clone();
