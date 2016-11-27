@@ -213,7 +213,8 @@ void getCircleCenter( Mat src_img_ ){
   old_img = smt_img.clone();    
 }
 
-int setServer(void){
+//int setServer(void){
+int setServer( char* ip_address_, int num_port_ ){
   // server
   int welcomeSocket, newSocket_;
   //char buffer[1024];
@@ -223,8 +224,9 @@ int setServer(void){
 
   welcomeSocket = socket(PF_INET, SOCK_STREAM, 0);
   serverAddr.sin_family = AF_INET;
-  serverAddr.sin_port = htons(7891);
-  serverAddr.sin_addr.s_addr = inet_addr(ip_address);
+  //serverAddr.sin_port = htons(7891);
+  serverAddr.sin_port = htons(port_num_);
+  serverAddr.sin_addr.s_addr = inet_addr(ip_address_);
   memset(serverAddr.sin_zero, '\0', sizeof serverAddr.sin_zero);  
   bind(welcomeSocket, (struct sockaddr *) &serverAddr, sizeof(serverAddr));
 
@@ -312,9 +314,10 @@ int main(int argc, char* argv[])
   ip_address = argv[2];
   int camera_num = atoi(argv[3]);
   */
-
+  int num_port = 7891;
   // open socket
-  int newSocket = setServer();
+  //int newSocket = setServer();
+  int newSocket = setServer( ip_address, num_port );
 
   // open camera  
   VideoCapture cap(camera_num); 
