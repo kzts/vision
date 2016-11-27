@@ -224,7 +224,6 @@ int setServer(void){
   welcomeSocket = socket(PF_INET, SOCK_STREAM, 0);
   serverAddr.sin_family = AF_INET;
   serverAddr.sin_port = htons(7891);
-  //serverAddr.sin_addr.s_addr = inet_addr("192.168.2.247");
   serverAddr.sin_addr.s_addr = inet_addr(ip_address);
   memset(serverAddr.sin_zero, '\0', sizeof serverAddr.sin_zero);  
   bind(welcomeSocket, (struct sockaddr *) &serverAddr, sizeof(serverAddr));
@@ -272,7 +271,7 @@ int getCameraNumber(void){
  int camera_num_;
 
  ifs >> str;
- cout << str << endl;
+ //cout << str << endl;
  istringstream is(str);
  is >> camera_num_;
  return camera_num_;
@@ -284,7 +283,7 @@ int getViewMode(void){
  int view_mode_;
 
  ifs >> str;
- cout << str << endl;
+ //cout << str << endl;
  istringstream is(str);
  is >> view_mode_;
  return view_mode_;
