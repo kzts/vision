@@ -317,7 +317,7 @@ int main(int argc, char* argv[])
   int port_num = 7891;
   // open socket
   //int newSocket = setServer();
-  int newSocket = setServer( ip_address, port_num );
+  //int newSocket = setServer( ip_address, port_num );
 
   // open camera  
   VideoCapture cap(camera_num); 
@@ -332,6 +332,7 @@ int main(int argc, char* argv[])
   Mat src_img, gry_img;
 
   // initiation 
+  int newSocket = setServer( ip_address, port_num );
   //struct timeval ini, now;
   //gettimeofday(&ini, NULL);
   gettimeofday( &ini_t, NULL );
