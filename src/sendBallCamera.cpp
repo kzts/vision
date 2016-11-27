@@ -3,7 +3,9 @@
 #include <sys/time.h>
 #include <iostream>
 #include <fstream>
-#include <string.h>
+//#include <string.h>
+#include <string>
+#include <sstream>
 //opencv
 #include <opencv2/opencv.hpp>
 #include <opencv2/core/core.hpp>
@@ -13,6 +15,11 @@
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
+// ip
+#include <unistd.h> /* for close */
+#include <sys/types.h>
+#include <sys/ioctl.h>
+#include <net/if.h>
 
 using namespace std;
 using namespace cv;
@@ -36,6 +43,8 @@ unsigned int len_roi = 30;
 Mat old_img, dst_img;
 int view_mode = 0;
 
+int camera_num;
+
 // socket
 char* ip_address;
 char buffer[1024];
@@ -50,6 +59,9 @@ Mat    frame_avi[NUM];
 double data_time[NUM];
 double data_ball[NUM][NUM_BALL_PARAMS];
 int codec = CV_FOURCC('X', 'V', 'I', 'D');
+
+char camera_num_file[] = "../data/params/camera_number.dat";
+char view_mode_file[] = "../data/params/view_mode.dat";
 
 void setBallParameters(int i){
   data_ball[i][ 0] = pos_ctr[0];
@@ -239,8 +251,55 @@ double getElaspedTime( int i ){
   return now_time_;
 }
 
+char* getIP(void){
+  int fd;
+  struct ifreq ifr;
+  
+  fd = socket(AF_INET, SOCK_DGRAM, 0);
+  ifr.ifr_addr.sa_family = AF_INET; // IPv4 IP address
+  strncpy(ifr.ifr_name, "eth0", IFNAMSIZ-1);   // eth0 IP address
+  ioctl(fd, SIOCGIFADDR, &ifr);
+  close(fd);
+
+  // printf("%s\n", inet_ntoa(((struct sockaddr_in *)&ifr.ifr_addr)->sin_addr));
+
+  return inet_ntoa(((struct sockaddr_in *)&ifr.ifr_addr)->sin_addr);
+}
+
+int getCameraNumber(void){
+ ifstream ifs( camera_num_file );
+ string str;
+ int camera_num_;
+
+ ifs >> str;
+ cout << str << endl;
+ istringstream is(str);
+ is >> camera_num_;
+ return camera_num_;
+}
+
+int getViewMode(void){
+ ifstream ifs( view_mode_file );
+ string str;
+ int view_mode_;
+
+ ifs >> str;
+ cout << str << endl;
+ istringstream is(str);
+ is >> view_mode_;
+ return view_mode_;
+}
+
+
 int main(int argc, char* argv[])
 {
+  ip_address = getIP();
+  camera_num = getCameraNumber();
+  view_mode = getViewMode();
+  cout << "ip: " << ip_address 
+       << ", camera: " << camera_num
+       << ", view mode: " << view_mode << endl;
+  /*
   // command line input
   if ( argc != 4 ){
     cout << "input four: " 
@@ -253,6 +312,7 @@ int main(int argc, char* argv[])
   view_mode = atoi(argv[1]);
   ip_address = argv[2];
   int camera_num = atoi(argv[3]);
+  */
 
   // open socket
   int newSocket = setServer();
@@ -321,6 +381,7 @@ int main(int argc, char* argv[])
   cout << "saved avi file: " << filename_avi << endl;
 
   return 0;
+
 }
 
 
