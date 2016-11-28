@@ -380,6 +380,7 @@ int main(int argc, char* argv[])
     setBallParameters(i);
     i++;
 
+    strcpy( buffer, "END" );
     recv( newSocket, buffer, 3, 0);
     if ( strcmp( buffer, "END" ) == 0 )
 	 break;
