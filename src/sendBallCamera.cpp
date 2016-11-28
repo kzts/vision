@@ -294,32 +294,14 @@ int getViewMode(void){
 
 int main(int argc, char* argv[])
 {
+  // get parameters
   ip_address = getIP();
   camera_num = getCameraNumber();
   view_mode = getViewMode();
   cout << "ip: " << ip_address 
        << ", camera: " << camera_num
        << ", view mode: " << view_mode << endl;
-  /*
-  // command line input
-  if ( argc != 4 ){
-    cout << "input four: " 
-	 << "view mode (off:0, on:1), " 
-	 << "this PC's IP address and " 
-	 << "camera number." 
-	 << endl;
-    return -1;
-  }
-  view_mode = atoi(argv[1]);
-  ip_address = argv[2];
-  int camera_num = atoi(argv[3]);
-  */
   getFileName();
-
-  int port_num = 7891;
-  // open socket
-  //int newSocket = setServer();
-  //int newSocket = setServer( ip_address, port_num );
 
   // open camera  
   VideoCapture cap(camera_num); 
@@ -333,49 +315,33 @@ int main(int argc, char* argv[])
   }
   Mat src_img, gry_img;
 
-  // initiation 
+  // open socket
+  int port_num = 7891;
   int newSocket = setServer( ip_address, port_num );
-  //struct timeval ini, now;
-  //gettimeofday(&ini, NULL);
-  gettimeofday( &ini_t, NULL );
 
   if ( view_mode > 0 )
     namedWindow( "dst", CV_WINDOW_AUTOSIZE);
   cap >> src_img;
   cvtColor( src_img, gry_img, CV_BGR2GRAY );
-  //old_img = gry_img.clone();
   GaussianBlur( gry_img, old_img, Size(5,5), 2, 2 ); 
 
   // loop
-  //strcpy( buffer, "ready" );
-  //send( newSocket, buffer, 5, 0);
+  strcpy( buffer, "ready" );
+  send( newSocket, buffer, 5, 0);
+  gettimeofday( &ini_t, NULL );
   int i = 0;
   while (true){
-    double now_ms = getElaspedTime(i);
-    //gettimeofday(&now, NULL);
-    
+    getElaspedTime(i);
     cap >> src_img;
-
-
-
-    //if ( now.tv_sec - ini.tv_sec > END_TIME_SEC )
-    //if ( now_ms > END_TIME_MS ){
-    // close socket  
-    //strcpy( buffer, "END" );
-    //send( newSocket, buffer, 1024, 0);
-    //break;
-    //}
 
     getCircleCenter( src_img );
       
     if ( view_mode > 0 )
       imshow( "dst", dst_img );
       
-    //sprintf( buffer, "%d %d", (int) pos_ctr[0], (int) pos_ctr[1] );
     sprintf( buffer, "%8.3f %8.3f", bal_ctr[0], bal_ctr[1] );
     send( newSocket, buffer, 32, 0);
 
-    //frame_avi[i] = src_img;
     frame_avi[i] = src_img.clone();
     setBallParameters(i);
     i++;
@@ -385,7 +351,7 @@ int main(int argc, char* argv[])
     if ( strcmp( buffer, "END" ) == 0 )
 	 break;
 
-    cout << i << " " << buffer << endl;
+    //cout << i << " " << buffer << endl;
     waitKey(1);
   }
 
@@ -396,7 +362,6 @@ int main(int argc, char* argv[])
   cout << "saved avi file: " << filename_avi << endl;
 
   return 0;
-
 }
 
 
