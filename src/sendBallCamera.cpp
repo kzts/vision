@@ -314,6 +314,8 @@ int main(int argc, char* argv[])
   ip_address = argv[2];
   int camera_num = atoi(argv[3]);
   */
+  getFileName();
+
   int port_num = 7891;
   // open socket
   //int newSocket = setServer();
@@ -345,7 +347,8 @@ int main(int argc, char* argv[])
   GaussianBlur( gry_img, old_img, Size(5,5), 2, 2 ); 
 
   // loop
-  getFileName();
+  //strcpy( buffer, "ready" );
+  //send( newSocket, buffer, 5, 0);
   int i = 0;
   while (true){
     double now_ms = getElaspedTime(i);
@@ -353,9 +356,7 @@ int main(int argc, char* argv[])
     
     cap >> src_img;
 
-    recv( newSocket, buffer, 3, 0);
-    if ( strcmp( buffer, "END" ) == 0 )
-	 break;
+
 
     //if ( now.tv_sec - ini.tv_sec > END_TIME_SEC )
     //if ( now_ms > END_TIME_MS ){
@@ -378,7 +379,12 @@ int main(int argc, char* argv[])
     frame_avi[i] = src_img.clone();
     setBallParameters(i);
     i++;
-    
+
+    recv( newSocket, buffer, 3, 0);
+    if ( strcmp( buffer, "END" ) == 0 )
+	 break;
+
+    cout << i << " " << buffer << endl;
     waitKey(1);
   }
 
