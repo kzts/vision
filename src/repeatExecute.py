@@ -2,7 +2,7 @@
 import sys
 import subprocess
 
-if len(sys.argv) == 3:
+if len(sys.argv) != 3:
     print 'input: execute file and repeat number'
     sys.exit()
 #if len(sys.argv) < 4:
